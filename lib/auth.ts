@@ -21,12 +21,9 @@ export async function getCurrentUser(request: Request): Promise<User | null> {
 
     if (error || !user) return null;
 
-    // TODO: map auth user + profile table to app-level User shape.
     return {
       id: user.id,
       email: user.email ?? "",
-      username:
-        (user.user_metadata?.username as string | undefined) ?? user.email ?? "",
       created_at: user.created_at ?? new Date().toISOString(),
     };
   } catch (error) {
