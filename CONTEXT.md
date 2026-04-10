@@ -62,6 +62,198 @@
 
 ---
 
+# Project Instructions for AI Assistants
+
+## 1. SCOPE CONTROL RULES
+
+### Change Boundaries
+```markdown
+**CRITICAL: Ask before making changes to:**
+- File structure or directory organization
+- Package.json dependencies
+- Build configuration (webpack, vite, tsconfig, etc.)
+- Environment variables or .env files
+- Database schemas or migrations
+- API routes or endpoints
+- Authentication/authorization logic
+
+**Always confirm before:**
+- Deleting files or functions
+- Refactoring code outside the immediate request
+- Changing component APIs that affect other files
+- Modifying state management patterns
+- Altering data flow or prop drilling patterns
+
+**Never do without explicit request:**
+- "Improving" or "cleaning up" code that wasn't mentioned
+- Renaming files or folders for "consistency"
+- Adding features "while I'm here"
+- Changing styling of unrelated components
+- Reformatting entire files when changing one function
+```
+
+### Single Responsibility per Request
+```markdown
+When asked to "add a button":
+✅ Add the button as requested
+❌ Don't also refactor the entire component
+❌ Don't reorganize imports
+❌ Don't update styling of other elements
+❌ Don't add error handling that wasn't requested
+
+If you see issues, mention them separately:
+"I've added the button as requested. I noticed [issue X] - would you like me to address that separately?"
+```
+
+---
+
+## 2. STYLING ARCHITECTURE
+
+### Approach: [Choose ONE per project]
+
+#### Option A: Tailwind with Design Tokens
+```markdown
+**REQUIRED STYLING APPROACH:**
+- Use Tailwind utility classes ONLY
+- All colors/spacing MUST come from tailwind.config.js
+- NO arbitrary values like `bg-[#ff0000]` or `w-[127px]`
+- NO inline styles via the style prop
+- Custom utilities go in @layer utilities in globals.css
+
+**Design Token Location:**
+- Colors: tailwind.config.js → theme.extend.colors
+- Spacing: tailwind.config.js → theme.extend.spacing
+- Typography: tailwind.config.js → theme.extend.fontFamily
+
+**Example:**
+✅ `className="bg-primary-500 text-lg px-spacing-md"`
+❌ `style={{ backgroundColor: '#3b82f6' }}`
+❌ `className="bg-blue-500"` (use semantic tokens instead)
+```
+
+#### Option B: CSS Modules
+```markdown
+**REQUIRED STYLING APPROACH:**
+- Each component gets a .module.css file
+- NO inline styles via style prop
+- NO global CSS except in globals.css
+- Use CSS custom properties for theming
+
+**File Structure:**
+```
+Button/
+  ├── Button.tsx
+  ├── Button.module.css
+  └── index.ts
+```
+
+**CSS Variables Location:**
+- :root variables in styles/variables.css
+- Import order: variables → globals → component modules
+
+**Example:**
+✅ `className={styles.primaryButton}`
+✅ `background: var(--color-primary);`
+❌ `style={{ backgroundColor: 'blue' }}`
+```
+
+#### Option C: Styled Components / Emotion
+```markdown
+**REQUIRED STYLING APPROACH:**
+- All styles in styled-components with theme provider
+- NO inline styles via style prop
+- NO CSS files (except global resets)
+- Theme values MUST come from theme.ts
+
+**Theme Location:**
+- theme/index.ts exports default theme object
+- Colors, spacing, typography defined there
+- Use theme props: ${props => props.theme.colors.primary}
+
+**Example:**
+✅ `const Button = styled.button\`background: ${p => p.theme.colors.primary};\``
+❌ `<button style={{ background: 'blue' }}>`
+```
+
+---
+
+## 3. COMPONENT ARCHITECTURE
+
+### Component Structure
+```markdown
+**REQUIRED STRUCTURE for all components:**
+
+1. Imports (grouped and ordered)
+   - React/Next/framework imports
+   - Third-party libraries
+   - Local components
+   - Types
+   - Styles/constants
+
+2. Types/Interfaces
+   - Props interface
+   - Local types
+
+3. Component definition
+   - Props destructuring
+   - Hooks (useState, useEffect, custom hooks)
+   - Derived state/computed values
+   - Event handlers
+   - Return JSX
+
+4. Exports
+   - Named export for testing
+   - Default export for usage
+
+**Example:**
+```typescript
+// ✅ CORRECT
+import { useState } from 'react';
+import { Button } from '@/components/ui';
+import type { User } from '@/types';
+import styles from './UserCard.module.css';
+
+interface UserCardProps {
+  user: User;
+  onEdit: (id: string) => void;
+}
+
+export function UserCard({ user, onEdit }: UserCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  const handleToggle = () => setIsExpanded(!isExpanded);
+  
+  return (
+    <div className={styles.card}>
+      {/* ... */}
+    </div>
+  );
+}
+
+export default UserCard;
+```
+
+### State Management Rules
+```markdown
+**When to use each:**
+- useState: Component-local state only
+- useContext: App-wide theme, auth, user preferences
+- Props: Parent-to-child data flow
+- Custom hooks: Reusable logic (useAuth, useFetch)
+
+**NEVER:**
+- Prop drilling more than 2 levels (use context or composition)
+- Storing derived state (calculate on render)
+- Duplicating state across components
+
+**Ask before:**
+- Adding global state management (Redux, Zustand)
+- Creating new contexts
+- Changing state management patterns
+```
+
+---
+
 ## Tech Stack
 
 ### Frontend
@@ -92,8 +284,66 @@
 - **Extension**: Chrome Web Store + Firefox Add-ons
 - **Cost**: ~$12/year (domain only, free tiers for Vercel + Supabase)
 
+**Forbidden Without Approval:**
+- Don't add new npm packages without asking
+- Don't switch from App Router to Pages Router
+- Don't add client-side state management (Redux, Zustand) without discussion
+- Don't use CSS-in-JS libraries (we use Tailwind)
+- Don't add UI libraries (shadcn, MUI, Chakra) - build custom components
+
 ---
 
+### Error Handling
+```markdown
+**Required patterns:**
+- Try/catch in async functions
+- Error boundaries for component errors
+- Loading states for async operations
+- Empty states for no data
+
+**Ask before:**
+- Adding error tracking (Sentry, LogRocket)
+- Changing error handling patterns globally
+```
+
+### Accessibility
+```markdown
+**Required:**
+- Semantic HTML (button, nav, header, main, article)
+- ARIA labels where needed
+- Keyboard navigation support (tab order, Enter/Space handlers)
+- Focus states visible
+- Color contrast meets WCAG AA
+
+**Test before submitting:**
+- Tab through interactive elements
+- Screen reader announces correctly
+```
+
+---
+
+## 7. TESTING REQUIREMENTS
+
+```markdown
+**When changes require tests:**
+- New components → Unit tests
+- New API routes → Integration tests
+- New utilities → Unit tests
+- Bug fixes → Regression test
+
+**Test file location:**
+- Same directory as component: Button.test.tsx
+- Or __tests__/Button.test.tsx
+
+**Required test coverage:**
+- User interactions (clicks, form submissions)
+- Edge cases (empty states, errors)
+- Accessibility (ARIA, keyboard navigation)
+
+**Ask before:**
+- Adding new testing libraries
+- Changing test patterns
+```
 ## Database Schema
 
 ### Tables

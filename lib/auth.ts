@@ -1,33 +1,56 @@
-import { supabase } from "@/lib/supabase";
-import type { User } from "@/types";
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 /**
- * Resolve the current user from an incoming request.
- *
- * @param request - HTTP `Request` (e.g. from a Route Handler)
- * @returns Application `User`, or `null` if unauthenticated / invalid token
+ * Get current user from request
  */
-export async function getCurrentUser(request: Request): Promise<User | null> {
+export async function getCurrentUser(request: Request) {
   try {
-    const authHeader = request.headers.get("Authorization");
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return null;
+    // Check if request header has an authorization header that is a token
+    // Pull out token
+    const authHeader = request.headers.get('authorization')
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return null
     }
 
-    const token = authHeader.slice("Bearer ".length).trim();
+    const token = authHeader.replace('Bearer ', '')
+    
+    // Create supabase client with user's token
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    })
+    
+    // Check if user is authorized, if so return user
+    const { data: { user }, error } = await supabase.auth.getUser(token)
+    
+    if (error || !user) {
+      return null
+    }
 
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-
-    if (error || !user) return null;
-
-    return {
-      id: user.id,
-      email: user.email ?? "",
-      created_at: user.created_at ?? new Date().toISOString(),
-    };
+    return user
   } catch (error) {
-    console.log("Auth Error", error);
-    return null;
+    console.error('Auth error:', error)
+    return null
   }
+}
+
+/**
+ * Create Supabase client with user's auth token
+ * This is needed for RLS policies to work correctly
+ */
+export function createAuthenticatedClient(token: string) {
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    global: {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  })
 }
