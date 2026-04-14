@@ -1,4 +1,5 @@
 import { createAuthenticatedClient, getCurrentUser } from '@/lib/auth';
+import { nanoid } from 'nanoid';
 import { NextRequest } from 'next/server';
 
 // GET /api/prompts/:id
@@ -68,18 +69,20 @@ export async function PATCH(
             )
         }
 
-        //Create authenticated Supabase client
+        // Create authenticated Supabase client
         const token = request.headers.get('authorization')?.replace('Bearer ', '')!;
         const supabase = createAuthenticatedClient(token);
 
-        // Verify ownership FIRST (before updating)
+        // Verify ownership first before updating
         const { data: existing, error: fetchError } = await supabase
             .from('prompts')
-            .select('user_id')
+            .select('user_id, share_id')
             .eq('id', params.id)
             .is('deleted_at', null)
             .single();
   
+        console.log('Existing prompt data:', existing, 'Fetch error:', fetchError);
+
         if (fetchError || !existing) {
             return Response.json(
                 { error: 'Prompt not found' },
@@ -103,14 +106,27 @@ export async function PATCH(
             'content',
             'tags',
             'collection_id',
-            'is_favorite'
+            'is_favorite',
+            'is_shared',
+            'share_visibility',
+            'share_description',
         ];
 
+        // Create object to hold fields to update
         const updateData: any = {}
         for (const field of allowedFields) {
             if (field in body) {
                 updateData[field] = body[field]
             }
+        }
+
+        // Handle sharing logic when is_shared is being toggled on
+        if (body.is_shared === true) {
+            // Generate share_id only if one doesn't already exist
+            if (!existing.share_id) {
+                updateData.share_id = nanoid(8)
+            }
+
         }
 
         // Always update the updated_at timestamp

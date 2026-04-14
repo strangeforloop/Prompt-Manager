@@ -89,7 +89,7 @@ export async function PATCH(
     const body = await request.json()
     
     // Only allow updating certain fields
-    const allowedFields = ['name', 'description', 'icon']
+    const allowedFields = ['name', 'description', 'icon, share_visibility, share_description'];
     const updateData: any = {}
     
     for (const field of allowedFields) {
@@ -114,8 +114,8 @@ export async function PATCH(
       .from('collections')
       .update(updateData)
       .eq('id', params.id)
-      .eq('user_id', user.id) // Extra safety check
-      .select()
+      .eq('user_id', user.id)
+      .select('user_id, share_id, is_shared')
       .single()
 
     if (error) {

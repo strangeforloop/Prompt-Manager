@@ -5,29 +5,29 @@ import { NextRequest } from 'next/server'
 export async function POST(request: NextRequest) {
   try {
     // Get current user
-    const user = await getCurrentUser(request)
+    const user = await getCurrentUser(request);
     
     if (!user) {
       return Response.json(
         { error: 'Unauthorized' },
         { status: 401 }
-      )
+      );
     }
 
     // Create authenticated Supabase client
-    const token = request.headers.get('authorization')?.replace('Bearer ', '')!
-    const supabase = createAuthenticatedClient(token)
+    const token = request.headers.get('authorization')?.replace('Bearer ', '')!;
+    const supabase = createAuthenticatedClient(token);
 
     // Parse request body
-    const body = await request.json()
-    const { name, description, icon } = body
+    const body = await request.json();
+    const { name, description, icon } = body;
 
     // Validate required fields
     if (!name) {
       return Response.json(
         { error: 'Name is required' },
         { status: 400 }
-      )
+      );
     }
 
     // Insert into database
@@ -40,14 +40,14 @@ export async function POST(request: NextRequest) {
         icon: icon || null,
       })
       .select()
-      .single()
+      .single();
 
     if (error) {
       console.error('Database error:', error)
       return Response.json(
         { error: 'Failed to create collection' },
         { status: 500 }
-      )
+      );
     }
 
     // Return created collection
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     return Response.json(
       { error: 'Internal server error' },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -72,12 +72,12 @@ export async function GET(request: NextRequest) {
       return Response.json(
         { error: 'Unauthorized' },
         { status: 401 }
-      )
+      );
     }
 
     // Create authenticated Supabase client
-    const token = request.headers.get('authorization')?.replace('Bearer ', '')!
-    const supabase = createAuthenticatedClient(token)
+    const token = request.headers.get('authorization')?.replace('Bearer ', '')!;
+    const supabase = createAuthenticatedClient(token);
 
     // Get query parameters
     const { searchParams } = new URL(request.url)
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
       .from('collections')
       .select(include_prompts ? '*, prompts(*)' : '*')
       .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false });
 
     // Execute query
     const { data, error } = await query
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
       return Response.json(
         { error: 'Failed to fetch collections' },
         { status: 500 }
-      )
+      );
     }
 
     // If include_prompts, filter out deleted prompts
@@ -106,18 +106,18 @@ export async function GET(request: NextRequest) {
       const collectionsWithActivePrompts = (data as unknown as Array<{ prompts?: { deleted_at?: string | null }[] } & Record<string, unknown>>).map(collection => ({
         ...collection,
         prompts: collection.prompts?.filter((p: any) => !p.deleted_at) || []
-      }))
-      return Response.json({ collections: collectionsWithActivePrompts })
+      }));
+      return Response.json({ collections: collectionsWithActivePrompts });
     }
 
     // Return collections
-    return Response.json({ collections: data })
+    return Response.json({ collections: data });
 
   } catch (error) {
-    console.error('List collections error:', error)
+    console.error('List collections error:', error);
     return Response.json(
       { error: 'Internal server error' },
       { status: 500 }
-    )
+    );
   }
 }

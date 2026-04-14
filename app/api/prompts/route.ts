@@ -67,6 +67,8 @@ export async function POST(request: NextRequest) {
 
 // GET /api/prompts
 export async function GET(request: NextRequest) {
+    console.log('GET /api/prompts hit')
+    console.log('Auth header:', request.headers.get('authorization'))
     try {
         // Get current user
         const user = await getCurrentUser(request)
@@ -83,39 +85,41 @@ export async function GET(request: NextRequest) {
         const supabase = createAuthenticatedClient(token)
 
         // Get query parameters for filtering
-        const { searchParams } = new URL(request.url)
-        const collection_id = searchParams.get('collection_id')
-        const tag = searchParams.get('tag')
-        const favorite = searchParams.get('favorite')
-        const search = searchParams.get('search')
+        const { searchParams } = new URL(request.url);
+        const collection_id = searchParams.get('collection_id');
+        const tag = searchParams.get('tag');
+        const favorite = searchParams.get('favorite');
+        const search = searchParams.get('search');
 
         // Build query
         let query = supabase
             .from('prompts')
             .select('*')
             .eq('user_id', user.id)
-            .is('deleted_at', null) // Only non-deleted prompts
-            .order('created_at', { ascending: false })
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false });
 
         // Apply filters based on query params
         if (collection_id) {
-            query = query.eq('collection_id', collection_id)
+            query = query.eq('collection_id', collection_id);
         }
 
         if (tag) {
-            query = query.contains('tags', [tag])
+            query = query.contains('tags', [tag]);
         }
 
         if (favorite === 'true') {
-            query = query.eq('is_favorite', true)
+            query = query.eq('is_favorite', true);
         }
 
         if (search) {
-            query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`)
+            query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`);
         }
 
         // Execute query
-        const { data, error } = await query
+        const { data, error } = await query;
+
+        console.log('Fetched prompts:', data, 'Error:', error);
 
         if (error) {
             console.error('Database error:', error)
