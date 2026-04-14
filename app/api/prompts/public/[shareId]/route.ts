@@ -9,7 +9,7 @@ export async function GET(
 
   const { data: prompt, error } = await supabase
     .from('prompts')
-    .select('id, title, content, tags, share_description, share_visibility, use_count, created_at, updated_at')
+    .select('id, title, content, tags, share_description, share_visibility, share_view_count, share_import_count, created_at, updated_at')
     .eq('share_id', shareId)
     .eq('is_shared', true)
     .is('deleted_at', null)
