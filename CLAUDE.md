@@ -59,3 +59,33 @@ Every API route handler follows this pattern:
 ### Path Alias
 
 `@/*` maps to the repo root (e.g., `import { getCurrentUser } from '@/lib/auth'`).
+
+# Strict Workflow Rules
+
+## CRITICAL: File Modification Protocol
+You MUST follow this protocol for EVERY task:
+
+1. **Analysis Phase**
+   - Read the user's request
+   - Determine which files need to be created or modified
+   
+2. **Confirmation Phase** (REQUIRED)
+   - List ALL files that will be affected:
+     - Files to be created
+     - Files to be modified
+     - Files to be read (if relevant)
+   - Ask: "I will make changes to these files: [list]. Proceed?"
+   - WAIT for explicit "yes" or "proceed" before continuing
+   
+3. **Execution Phase**
+   - Only after confirmation, make the changes
+   - ONLY touch the files that were approved
+
+## Styling Rules (NON-NEGOTIABLE)
+- Inline styles (style={{}}) are FORBIDDEN
+- Use Tailwind utility classes for all styling
+- If a style cannot be achieved with Tailwind, use CSS modules
+- CSS-in-JS is not allowed
+
+## If Unsure
+When in doubt about whether to modify a file, ASK FIRST.
