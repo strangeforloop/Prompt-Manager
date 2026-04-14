@@ -255,6 +255,7 @@ export default UserCard;
 `@/*` maps to the repo root (e.g., `import { getCurrentUser } from '@/lib/auth'`).
 
 
+
 # Strict Workflow Rules
 
 ## CRITICAL: File Modification Protocol
@@ -284,6 +285,7 @@ You MUST follow this protocol for EVERY task:
 
 ## Linting Rules
 - End all lines with a semicolon
+
 
 ## If Unsure
 When in doubt about whether to modify a file, ASK FIRST.
