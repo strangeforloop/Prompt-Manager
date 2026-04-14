@@ -8,7 +8,8 @@ type Prompt = {
   content: string
   tags: string[]
   share_description: string | null
-  use_count: number
+  share_view_count: number
+  share_import_count: number
   created_at: string
   updated_at: string
 }
@@ -102,10 +103,10 @@ export default function PromptView({ prompt }: { prompt: Prompt }) {
           {/* Metadata */}
           <div className="flex items-center gap-3 text-xs text-gray-400 font-light whitespace-nowrap">
             <span>{formattedDate}</span>
-            {prompt.use_count > 0 && (
+            {prompt.share_view_count > 0 && (
               <>
                 <span className="text-gray-200">·</span>
-                <span>Used {prompt.use_count.toLocaleString()} {prompt.use_count === 1 ? 'time' : 'times'}</span>
+                <span>{prompt.share_view_count.toLocaleString()} {prompt.share_view_count === 1 ? 'view' : 'views'}</span>
               </>
             )}
           </div>
