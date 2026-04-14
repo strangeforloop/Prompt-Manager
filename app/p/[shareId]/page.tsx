@@ -1,7 +1,7 @@
-import { notFound } from 'next/navigation'
-import PromptView from './PromptView'
+import { notFound } from 'next/navigation';
+import PromptView from './PromptView';
 
-const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'
+const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000';
 
 export default async function SharedPromptPage({
   params,

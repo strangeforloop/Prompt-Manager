@@ -1,7 +1,7 @@
-import { notFound } from 'next/navigation'
-import CollectionView from './CollectionView'
+import { notFound } from 'next/navigation';
+import CollectionView from './CollectionView';
 
-const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'
+const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000';
 
 export default async function SharedCollectionPage({
   params,
