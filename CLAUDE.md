@@ -149,7 +149,7 @@ Button/
 **Example:**
 ✅ `className={styles.primaryButton}`
 ✅ `background: var(--color-primary);`
-❌ `style={{ backgroundColor: 'blue' }}`
+❌ `style={{ backgroundColor: 'blue' }}`0
 ```
 
 #### Option C: Styled Components / Emotion
